@@ -1,26 +1,33 @@
-import datetime as dt
-import pandas as pd
-import random
-import smtplib
+import requests
 import os
 
-month_now = dt.datetime.today().month
-day_now = dt.datetime.today().day
+def telegram_bot_sendtext(bot_message):
+    bot_token = os.environ.get("BOT_TOKEN")
+    bot_chatID = os.environ.get("BOT_CHAT_ID")
+    send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&parse_mode=Markdown&text=' + bot_message
 
-birthday_data = pd.read_csv('birthdays.csv').to_dict('records')
+    response = requests.get(send_text)
 
-for birthday in birthday_data:
-    if birthday['month'] == month_now and birthday['day'] == day_now:
-        birthday_name = birthday['name']
-        with open(f'letter_templates/letter_{random.randint(1, 3)}.txt', 'r') as file:
-            file = file.read()
+    return response.json()
 
-        replaced_name = file.replace("[NAME]", birthday_name)
-        new_mail = "".join(replaced_name)
+api_key = "253682c0bd759acfb4255d4aa08c3dd7"
+params = {
+    "lat": "49.9935",
+    "lon": "36.230383",
+    "appid": api_key,
+    "cnt": 4
+}
 
-        my_email = os.environ.get("MY_EMAIL")
-        my_password = os.environ.get("MY_PASSWORD")
-        with smtplib.SMTP('smtp.ethereal.email', 587) as connection:
-            connection.starttls()
-            connection.login(user=my_email, password=my_password)
-            connection.sendmail(to_addrs=my_email, msg=f"Subject:Happy Birthday\n\n{new_mail}", from_addr=my_email)
+response = requests.get(f"https://api.openweathermap.org/data/2.5/forecast", params=params)
+response.raise_for_status()
+data = response.json()
+
+weather_list = [item["weather"][0]["id"] for item in data["list"]]
+
+is_raining = False
+for item in weather_list:
+    if int(item) < 800:
+        is_raining = True
+
+if is_raining:
+    telegram_bot_sendtext("Raining")
