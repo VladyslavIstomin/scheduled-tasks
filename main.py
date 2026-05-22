@@ -90,7 +90,7 @@ def main_weather():
             is_raining = True
 
     if is_raining:
-        telegram_bot_sendtext("Raining")
+        telegram_bot_sendtext("It will be raining today")
 
 def main_company():
     company_info = get_company_info(COMPANY_NAME)
@@ -99,7 +99,7 @@ def main_company():
 
     dif_percent = round((abs(yesterday_price - day_before_yesterday_price) / yesterday_price) * 100)
 
-    if abs(dif_percent) > 1:
+    if abs(dif_percent) > 5:
         news = get_news(COMPANY_NAME)
         last_news = news["News data"]
 
